@@ -24,18 +24,15 @@ class DiscordClient(discord.Client):
         
     
     async def on_ready(self):
-        
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(self.start_working, CronTrigger(hour="*", minute="*", second="30"))
+        scheduler.add_job(self.start_working, CronTrigger(hour="*", minute="0", second="0"))
         scheduler.start()
         
         
     async def on_message(self, message):
-        
         received = message.content
         
         try:
-        
             if received.lower() == 'ping':
                 await message.channel.send('pong {0.author.mention}'.format(message))
                 
@@ -46,16 +43,15 @@ class DiscordClient(discord.Client):
                 await message.channel.send(msg)
                 
             if 'refresh' in received.lower():
-                codes = other.refreshMarketCodes()
-                print(f'size : {len(codes)}')
+                codes = other.refresh_market_codes()
                 msg = f'[갱신] market codes : {len(codes)} 건'
                 msg += ' {0.author.mention}'.format(message)
                 print(msg)
                 await message.channel.send(msg)
                 
             if 'show' in received.lower():
-                codes = other.getMarketCodes()
-                print(f'size : {len(codes)}')
+                code = received.lower().strip("show").strip()
+                codes = other.get_market_codes(code)
                 msg = f'[조회] market codes : {len(codes)} 건'
                 msg += ' {0.author.mention}'.format(message)
                 print(msg)
