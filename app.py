@@ -5,6 +5,9 @@ import time
 from datetime import datetime
 from other_app import OtherApp
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
 
 TOKEN=os.environ['DISCORD_TOKEN']
 CHANNEL_ID=os.environ['DISCORD_CHANNEL_ID']
@@ -14,11 +17,21 @@ other=OtherApp()
 class DiscordClient(discord.Client):
     
     
+    async def start_working(self):
+        channel = self.get_channel(int(CHANNEL_ID))
+        message = f'[현재시간] {self.get_date()} {self.get_time()}'
+        await channel.send(message)
+        
+    
     async def on_ready(self):
-        await self.start_working()
+        
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(self.start_working, CronTrigger(hour="*", minute="*", second="30"))
+        scheduler.start()
         
         
     async def on_message(self, message):
+        
         received = message.content
         
         try:
@@ -32,8 +45,18 @@ class DiscordClient(discord.Client):
                 print(msg)
                 await message.channel.send(msg)
                 
+            if 'refresh' in received.lower():
+                codes = other.refreshMarketCodes()
+                print(f'size : {len(codes)}')
+                msg = f'[갱신] market codes : {len(codes)} 건'
+                msg += ' {0.author.mention}'.format(message)
+                print(msg)
+                await message.channel.send(msg)
+                
             if 'show' in received.lower():
-                msg = f'[잔고] your account balance ...'
+                codes = other.getMarketCodes()
+                print(f'size : {len(codes)}')
+                msg = f'[조회] market codes : {len(codes)} 건'
                 msg += ' {0.author.mention}'.format(message)
                 print(msg)
                 await message.channel.send(msg)
@@ -46,15 +69,7 @@ class DiscordClient(discord.Client):
         
         except Exception as e:
             print(f'error: {e}')
-
-
-    async def start_working(self):
-        channel = self.get_channel(int(CHANNEL_ID))
-        while True:
-           time.sleep(60)
-           message = f'[현재시간] {self.get_date()} {self.get_time()}'
-           await channel.send(message)
-           
+            
            
     def get_time(self):
         return datetime.today().strftime('%H:%M:%S')
