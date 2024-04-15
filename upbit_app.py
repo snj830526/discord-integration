@@ -6,7 +6,7 @@ code_file = 'market_codes.json'
 api_url = 'https://api.upbit.com'
 
 
-class OtherApp():
+class UpbitApp:
 
     def __init__(self):
         pass
@@ -23,7 +23,7 @@ class OtherApp():
         if code is not None and code != '':
             for s in saved:
                 if code.upper() in s["market"]:
-                    print(f'found : {s["market_event"]}')
+                    print(f'found : {s["market"]} / {s["market_event"]}')
                     result.append(f'{s["market"]} / {s["korean_name"]}')
         else:
             result = saved
